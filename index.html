@@ -1868,6 +1868,7 @@ const LIVE_TICKERS = [
   { symbol: 'SUGP', exchange: 'Nasdaq' },
   { symbol: 'RZAI', exchange: 'Nasdaq' },
   { symbol: 'ZKIN', exchange: 'Nasdaq' },
+  { symbol: 'YQAI', exchange: 'OTC' },
   // NYSE American
   // OTC
   // ASX
@@ -1885,7 +1886,39 @@ async function fetchQuotes() {
     const resp = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}`);
     if (resp.ok) {
       const data = await resp.json();
-      const quotes = data.quoteResponse?.result || [  ];
+      const quotes = data.quoteResponse?.result || [    {
+    id: 'yqai',
+    name: 'YQAI',
+    ticker: 'YQAI',
+    exchange: 'OTC',
+    type: 'Holdings',
+    value: 'Holdings',
+    valueNum: 0,
+    status: 'active',
+    statusLabel: 'Active',
+    director: 'Josh Bartch',
+    directorEmail: 'bartchjosh@gmail.com',
+    projected: 'Ongoing',
+    pipeGross: '—',
+    pipeNet: '—',
+    pipeNote: '',
+    progress: 50,
+    milestones: [
+      { label: 'Position established', status: 'done' },
+      { label: 'Monitoring', status: 'in-progress' },
+    ],
+    outstanding: [],
+    documents: [
+      { name: 'SPA', status: 'signed' },
+      { name: 'RRA', status: 'signed' },
+    ],
+    contacts: [
+      { name: 'Josh Bartch', role: 'CEO, MavDB', email: 'bartchjosh@gmail.com' },
+      { name: 'Sign Kadouh', role: 'Deal Operations', email: 'sign.kadouh@gmail.com' },
+    ],
+    notes: 'Holdings position in YQAI.',
+  },
+];
       container.innerHTML = quotes.map(q => {
         const ticker = LIVE_TICKERS.find(t => t.symbol === q.symbol);
         const name = ticker?.display || q.symbol;
