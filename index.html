@@ -1218,7 +1218,7 @@ const DEALS = [
     ],
     notes: 'Biotech direct listing targeting $400M valuation. Blocked on Andrew Parks signing formation documents to incorporate the entity. Licensing agreements need to be structured after formation.',
   },
-  {
+{
     id: 'stratum',
     name: 'Stratum Oncology',
     ticker: '—',
@@ -1229,7 +1229,7 @@ const DEALS = [
     status: 'early',
     statusLabel: 'Early Stage',
     director: 'TBD',
-    directorEmail: 'cr@christopherrowlison.com',
+    directorEmail: '',
     projected: '2028',
     pipeGross: 'TBD',
     pipeNet: 'TBD',
@@ -1311,6 +1311,56 @@ const DEALS = [
     notes: 'Drug resurrection play targeting BNC-210 compound (anxiety/PTSD). URGENT: Neuphoria Therapeutics is undergoing a strategic review, creating a time-sensitive window to acquire the BNC-210 asset. Early-stage but requires immediate action on IP acquisition.',
   },
   {
+    id: 'yqai',
+    name: 'YQAI',
+    ticker: 'YQAI',
+    exchange: 'OTC',
+    type: 'OTC Uplisting',
+    value: 'Uplisting',
+    valueNum: 0,
+    status: 'in-progress',
+    statusLabel: 'In Progress',
+    director: 'Christopher Rowlison',
+    directorEmail: '',
+    projected: 'TBD',
+    pipeGross: '—',
+    pipeNet: '—',
+    pipeNote: '',
+    progress: 55,
+    milestones: [
+      { label: 'License agreement with AgAI', status: 'done' },
+      { label: 'Management integration — AgAI team on board', status: 'done' },
+      { label: 'S-1 filed', status: 'done' },
+      { label: 'S-1 first round of comments — response going back', status: 'in-progress' },
+      { label: 'OTC QB uplisting application', status: 'in-progress', note: 'About to be filed' },
+      { label: '300 round lot shareholders', status: 'pending' },
+      { label: 'Interim financials', status: 'pending' },
+      { label: 'DCTS settlement — retire 2M preferred shares', status: 'pending', note: 'Murray Galbraith + Jim Romano' },
+    ],
+    outstanding: [
+      { text: '300 round lot shareholders needed for cap table', owner: 'Sign Kadouh', priority: 'high' },
+      { text: 'Finalize interim financials', owner: 'Christopher Rowlison', priority: 'high' },
+      { text: 'DCTS settlement — Digital Cavalier Technologies to retire 2M preferred shares', owner: 'Josh Bartch', priority: 'high' },
+      { text: 'OTC QB uplisting application filing', owner: 'Michael Littman', priority: 'high' },
+    ],
+    documents: [
+      { name: 'SPA', status: 'signed' },
+      { name: 'RRA', status: 'signed' },
+      { name: 'AgAI License Agreement', status: 'signed' },
+      { name: 'S-1 Registration Statement', status: 'filed' },
+      { name: 'DCTS Settlement Agreement', status: 'pending' },
+    ],
+    contacts: [
+      { name: 'Christopher Rowlison', role: 'CEO', email: 'cr@christopherrowlison.com' },
+      { name: 'Nick Genty', role: 'COO', email: 'Nick@ageyetech.com' },
+      { name: 'Michael Littman', role: 'Legal Counsel', email: 'malattyco@gmail.com' },
+      { name: 'Peter Field', role: 'Board Member', email: 'peterafield@gmail.com' },
+      { name: 'Josh Bartch', role: 'CEO, MavDB', email: 'bartchjosh@gmail.com' },
+      { name: 'Sign Kadouh', role: 'Deal Operations', email: 'sign.kadouh@gmail.com' },
+    ],
+    notes: 'OTC uplisting in progress. AgAI license agreement and management integration complete. S-1 filed — first round of SEC comments being addressed. OTC QB application about to be filed. Need 300 round lot shareholders. DCTS settlement pending — Digital Cavalier Technologies (Murray Galbraith + Jim Romano) to retire 2M preferred shares.',
+  },
+{
     id: 'cykl',
     name: 'Cykel AI',
     ticker: 'CYKL',
@@ -1357,7 +1407,7 @@ const DEALS = [
     ],
     notes: 'LSE-listed AI company. £2M placing at £0.12/share. Josh holds 7.8M warrants (2.6M pre-paid @ £0.12 + 5.2M cash). Sign Kadouh holds 10.4M warrants. Current market cap ~£904K. Heavily dilutive structure — 5.2M shares to potentially 65.8M fully diluted (12.7x).',
   },
-  {
+{
     id: 'horizen',
     name: 'Horizen Labs',
     ticker: '—',
@@ -1395,7 +1445,7 @@ const DEALS = [
     ],
     notes: 'CSE-listed. Advisory agreement in progress. Thomas Palletti is counsel, TAAD is auditor, Robert is CEO, Sign Kadouh is advisor. Redline from Ross Carmel pending clean-up.',
   },
-  ];
+];
 
 // ═══════════════════════════════════════════════════════════════
 // STATUS MAP
@@ -1871,9 +1921,9 @@ const LIVE_TICKERS = [
   { symbol: 'SUGP', exchange: 'Nasdaq' },
   { symbol: 'RZAI', exchange: 'Nasdaq' },
   { symbol: 'ZKIN', exchange: 'Nasdaq' },
-  { symbol: 'YQAI', exchange: 'OTC' },
   // NYSE American
   // OTC
+  { symbol: 'YQAI', exchange: 'OTC' },
   // ASX
   // CSE
   // LSE
@@ -1889,57 +1939,6 @@ async function fetchQuotes() {
     const resp = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}`);
     if (resp.ok) {
       const data = await resp.json();
-      const quotes = data.quoteResponse?.result || [    {
-    id: 'yqai',
-    name: 'YQAI',
-    ticker: 'YQAI',
-    exchange: 'OTC',
-    type: 'OTC Uplisting',
-    value: 'Uplisting',
-    valueNum: 0,
-    status: 'in-progress',
-    statusLabel: 'In Progress',
-    director: 'Christopher Rowlison',
-    directorEmail: '',
-    projected: 'TBD',
-    pipeGross: '—',
-    pipeNet: '—',
-    pipeNote: '',
-    progress: 55,
-    milestones: [
-      { label: 'License agreement with AgAI', status: 'done' },
-      { label: 'Management integration — AgAI team on board', status: 'done' },
-      { label: 'S-1 filed', status: 'done' },
-      { label: 'S-1 first round of comments — response going back', status: 'in-progress' },
-      { label: 'OTC QB uplisting application', status: 'in-progress', note: 'About to be filed' },
-      { label: '300 round lot shareholders', status: 'pending' },
-      { label: 'Interim financials', status: 'pending' },
-      { label: 'DCTS settlement — retire 2M preferred shares', status: 'pending', note: 'Murray Galbraith + Jim Romano' },
-    ],
-    outstanding: [
-      { text: '300 round lot shareholders needed for cap table', owner: 'Sign Kadouh', priority: 'high' },
-      { text: 'Finalize interim financials', owner: 'Christopher Rowlison', priority: 'high' },
-      { text: 'DCTS settlement — Digital Cavalier Technologies to retire 2M preferred shares', owner: 'Josh Bartch', priority: 'high' },
-      { text: 'OTC QB uplisting application filing', owner: 'Michael Littman', priority: 'high' },
-    ],
-    documents: [
-      { name: 'SPA', status: 'signed' },
-      { name: 'RRA', status: 'signed' },
-      { name: 'AgAI License Agreement', status: 'signed' },
-      { name: 'S-1 Registration Statement', status: 'filed' },
-      { name: 'DCTS Settlement Agreement', status: 'pending' },
-    ],
-    contacts: [
-      { name: 'Christopher Rowlison', role: 'CEO', email: 'cr@christopherrowlison.com' },
-      { name: 'Nick Genty', role: 'COO', email: 'Nick@ageyetech.com' },
-      { name: 'Michael Littman', role: 'Legal Counsel', email: 'malattyco@gmail.com' },
-      { name: 'Peter Field', role: 'Board Member', email: 'peterafield@gmail.com' },
-      { name: 'Josh Bartch', role: 'CEO, MavDB', email: 'bartchjosh@gmail.com' },
-      { name: 'Sign Kadouh', role: 'Deal Operations', email: 'sign.kadouh@gmail.com' },
-      { name: 'Sign Kadouh', role: 'Deal Operations', email: 'sign.kadouh@gmail.com' },
-    ],
-    notes: 'Holdings position in YQAI.',
-  },
 ];
       container.innerHTML = quotes.map(q => {
         const ticker = LIVE_TICKERS.find(t => t.symbol === q.symbol);
@@ -1976,5 +1975,4 @@ fetchQuotes();
 setInterval(fetchQuotes, 60000);
 </script>
 </body>
-<!-- Last updated: 2026-10-18 09:06:07 -->
 </html>
