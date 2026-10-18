@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>MavDB — Deal Operations (Sign Kadouh)</title>
+
+<!-- PWA / App Manifest -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Deal Tracker">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0A0F1A">
+<meta name="application-name" content="MavDB Deals">
+<meta name="msapplication-TileColor" content="#0A0F1A">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230A0F1A'/><text x='50' y='65' font-size='40' text-anchor='middle' fill='%2310B981' font-family='Arial' font-weight='bold'>M</text></svg>">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22MavDB%20Deal%20Command%20Center%22%2C%22short_name%22%3A%22Deal%20Tracker%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230A0F1A%22%2C%22theme_color%22%3A%22%230A0F1A%22%2C%22description%22%3A%22MavDB%20Consulting%20Deal%20Command%20Center%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%2520viewBox%3D'0%25200%2520100%2520100'%253E%253Crect%2520width%3D'100'%2520height%3D'100'%2520rx%3D'20'%2520fill%3D'%2523111827'%2F%253E%253Ctext%2520x%3D'50'%2520y%3D'65'%2520font-size%3D'40'%2520text-anchor%3D'middle'%2520fill%3D'%252310B981'%2520font-family%3D'Arial'%2520font-weight%3D'bold'%253EM%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22any%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   CSS RESET & BASE
+   ═══════════════════════════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-primary: #0A0F1A;
+  --bg-secondary: #111827;
+  --bg-card: #151C2C;
+  --bg-card-hover: #1A2338;
+  --bg-elevated: #1E2A3E;
+  --bg-input: #0D1320;
+  --border: #1E2D45;
+  --border-subtle: #162035;
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-dim: #475569;
+  --accent-green: #10B981;
+  --accent-green-dim: rgba(16, 185, 129, 0.15);
+  --accent-blue: #3B82F6;
+  --accent-blue-dim: rgba(59, 130, 246, 0.15);
+  --accent-amber: #F59E0B;
+  --accent-amber-dim: rgba(245, 158, 11, 0.15);
+  --accent-red: #EF4444;
+  --accent-red-dim: rgba(239, 68, 68, 0.15);
+  --accent-purple: #8B5CF6;
+  --accent-purple-dim: rgba(139, 92, 246, 0.15);
+  --accent-cyan: #06B6D4;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.25), 0 1px 4px rgba(0,0,0,0.15);
+  --shadow-elevated: 0 8px 40px rgba(0,0,0,0.4);
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html { font-size: 15px; scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+/* ═══════════════════════════════════════════════════════════════
+   LAYOUT SHELL
+   ═══════════════════════════════════════════════════════════════ */
+.app { min-height: 100vh; position: relative; }
+
+/* Subtle grid pattern overlay */
+.app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(30, 45, 69, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 45, 69, 0.12) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Glow orbs */
+.glow-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 0;
+}
+.glow-orb.orb-1 { width: 600px; height: 600px; background: var(--accent-blue); top: -200px; right: -100px; }
+.glow-orb.orb-2 { width: 500px; height: 500px; background: var(--accent-green); bottom: -150px; left: -100px; }
+
+.container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════════════════════ */
+.header {
+  padding: 1.8rem 0 1.2rem;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 1.5rem;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.logo-group { display: flex; align-items: center; gap: 1rem; }
+
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.6rem;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #F1F5F9 0%, #94A3B8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.logo-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+}
+
+.header-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.portfolio-value {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+}
+
+.portfolio-value .label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+
+.portfolio-value .value {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent-green);
+}
+
+.updated-stamp {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.updated-stamp span { color: var(--text-muted); }
+
+/* ═══════════════════════════════════════════════════════════════
+   TOOLBAR (search + filters)
+   ═══════════════════════════════════════════════════════════════ */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+}
+
+.search-box svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-dim);
+  width: 16px;
+  height: 16px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 0.65rem 1rem 0.65rem 2.6rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.search-box input::placeholder { color: var(--text-dim); }
+.search-box input:focus { border-color: var(--accent-blue); }
+
+.filter-group { display: flex; gap: 0.4rem; }
+
+.filter-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.filter-btn:hover { border-color: var(--text-dim); color: var(--text-secondary); }
+
+.filter-btn.active {
+  background: var(--accent-blue-dim);
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STATS BAR
+   ═══════════════════════════════════════════════════════════════ */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.stat-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.stat-icon.green { background: var(--accent-green-dim); color: var(--accent-green); }
+.stat-icon.blue { background: var(--accent-blue-dim); color: var(--accent-blue); }
+.stat-icon.amber { background: var(--accent-amber-dim); color: var(--accent-amber); }
+.stat-icon.red { background: var(--accent-red-dim); color: var(--accent-red); }
+
+.stat-info .stat-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.stat-info .stat-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DEAL CARDS GRID
+   ═══════════════════════════════════════════════════════════════ */
+.deals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1rem;
+  padding-bottom: 3rem;
+}
+
+.deal-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.4rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: cardIn 0.5s ease forwards;
+}
+
+@keyframes cardIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.deal-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transition: opacity var(--transition);
+}
+
+.deal-card[data-status="active"]::before { background: var(--accent-green); }
+.deal-card[data-status="in-progress"]::before { background: var(--accent-blue); }
+.deal-card[data-status="pending"]::before { background: var(--accent-amber); }
+.deal-card[data-status="blocked"]::before { background: var(--accent-red); }
+.deal-card[data-status="early"]::before { background: var(--accent-purple); }
+.deal-card[data-status="litigation"]::before { background: var(--accent-red); }
+
+.deal-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
+}
+
+.deal-card .card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+}
+
+.deal-card .deal-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.3;
+  flex: 1;
+  padding-right: 0.5rem;
+}
+
+.deal-card .deal-ticker {
+  color: var(--accent-cyan);
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  margin-top: 2px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.status-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-badge.active { background: var(--accent-green-dim); color: var(--accent-green); }
+.status-badge.active .dot { background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green); }
+
+.status-badge.in-progress { background: var(--accent-blue-dim); color: var(--accent-blue); }
+.status-badge.in-progress .dot { background: var(--accent-blue); box-shadow: 0 0 6px var(--accent-blue); }
+
+.status-badge.pending { background: var(--accent-amber-dim); color: var(--accent-amber); }
+.status-badge.pending .dot { background: var(--accent-amber); box-shadow: 0 0 6px var(--accent-amber); }
+
+.status-badge.blocked, .status-badge.litigation { background: var(--accent-red-dim); color: var(--accent-red); }
+.status-badge.blocked .dot, .status-badge.litigation .dot { background: var(--accent-red); box-shadow: 0 0 6px var(--accent-red); }
+
+.status-badge.early { background: var(--accent-purple-dim); color: var(--accent-purple); }
+.status-badge.early .dot { background: var(--accent-purple); box-shadow: 0 0 6px var(--accent-purple); }
+
+.deal-card .card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.meta-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.meta-tag svg { width: 11px; height: 11px; color: var(--text-dim); }
+
+.deal-card .card-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+}
+
+.deal-card .progress-section { margin-bottom: 0.7rem; }
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.progress-bar {
+  height: 4px;
+  background: var(--bg-elevated);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: 0;
+  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.deal-card[data-status="active"] .progress-fill { background: linear-gradient(90deg, var(--accent-green), #34D399); }
+.deal-card[data-status="in-progress"] .progress-fill { background: linear-gradient(90deg, var(--accent-blue), #60A5FA); }
+.deal-card[data-status="pending"] .progress-fill { background: linear-gradient(90deg, var(--accent-amber), #FBBF24); }
+.deal-card[data-status="blocked"] .progress-fill,
+.deal-card[data-status="litigation"] .progress-fill { background: linear-gradient(90deg, var(--accent-red), #F87171); }
+.deal-card[data-status="early"] .progress-fill { background: linear-gradient(90deg, var(--accent-purple), #A78BFA); }
+
+.deal-card .card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.director-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.director-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.director-name {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.projected-date {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DETAIL VIEW
+   ═══════════════════════════════════════════════════════════════ */
+.detail-view {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--bg-primary);
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.detail-view.open { transform: translateX(0); }
+
+.detail-header {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 2rem;
+}
+
+.detail-header-inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.detail-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.nav-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+.nav-btn svg { width: 14px; height: 14px; }
+
+.detail-title-group h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.3rem;
+}
+
+.detail-title-group .detail-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.detail-title-group .ticker-badge {
+  padding: 3px 10px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+}
+
+.detail-title-group .exchange-badge {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.detail-progress-ring {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.progress-circle {
+  width: 70px;
+  height: 70px;
+  position: relative;
+}
+
+.progress-circle svg { transform: rotate(-90deg); }
+
+.progress-circle .bg { stroke: var(--bg-elevated); }
+.progress-circle .fg { transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
+
+.progress-circle .pct {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* Detail Sections */
+.detail-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  padding-bottom: 3rem;
+}
+
+.detail-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.4rem;
+}
+
+.detail-section.full-width { grid-column: 1 / -1; }
+
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-title .icon { font-size: 1rem; }
+
+/* Metrics grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.metric-item {
+  padding: 0.8rem;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+}
+
+.metric-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-dim);
+  margin-bottom: 0.3rem;
+}
+
+.metric-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* Timeline / Milestones */
+.milestone-list { list-style: none; }
+
+.milestone-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 0.6rem 0;
+  position: relative;
+}
+
+.milestone-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 30px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--border-subtle);
+}
+
+.milestone-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+  position: relative;
+  z-index: 1;
+}
+
+.milestone-dot.done { background: var(--accent-green-dim); color: var(--accent-green); }
+.milestone-dot.in-progress { background: var(--accent-amber-dim); color: var(--accent-amber); }
+.milestone-dot.pending { background: var(--bg-elevated); color: var(--text-dim); }
+.milestone-dot.blocked { background: var(--accent-red-dim); color: var(--accent-red); }
+
+.milestone-text {
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.milestone-text .ms-label { color: var(--text-primary); }
+.milestone-text .ms-date { color: var(--text-dim); font-size: 0.72rem; margin-top: 1px; }
+
+/* Outstanding tasks */
+.task-list { list-style: none; }
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.6rem 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition);
+}
+
+.task-item:hover { background: var(--bg-elevated); }
+
+.task-check {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.task-content { flex: 1; }
+.task-content .task-text { font-size: 0.85rem; line-height: 1.4; }
+
+.task-content .task-meta {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 3px;
+}
+
+.task-owner, .task-priority {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.task-owner { color: var(--text-muted); }
+.priority-high { color: var(--accent-red); }
+.priority-medium { color: var(--accent-amber); }
+.priority-low { color: var(--text-dim); }
+
+/* Contacts */
+.contacts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.8rem;
+}
+
+.contact-card {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+}
+
+.contact-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.contact-info .contact-name { font-size: 0.82rem; font-weight: 600; }
+.contact-info .contact-role { font-size: 0.68rem; color: var(--text-dim); }
+
+/* Notes */
+.notes-content {
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.notes-content p { margin-bottom: 0.5rem; }
+
+/* Documents */
+.doc-list { list-style: none; }
+
+.doc-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition);
+}
+
+.doc-item:hover { background: var(--bg-elevated); }
+
+.doc-item .doc-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.doc-item .doc-icon { font-size: 0.9rem; }
+
+.doc-status {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.doc-status.signed { background: var(--accent-green-dim); color: var(--accent-green); }
+.doc-status.draft { background: var(--accent-amber-dim); color: var(--accent-amber); }
+.doc-status.final { background: var(--accent-blue-dim); color: var(--accent-blue); }
+.doc-status.filed { background: var(--accent-purple-dim); color: var(--accent-purple); }
+.doc-status.pending { background: var(--bg-elevated); color: var(--text-dim); }
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .detail-body { grid-template-columns: 1fr; }
+  .detail-section.full-width { grid-column: 1; }
+}
+
+@media (max-width: 720px) {
+  html { font-size: 14px; }
+  .container { padding: 0 1rem; }
+  .deals-grid { grid-template-columns: 1fr; }
+  .header-inner { flex-direction: column; align-items: flex-start; }
+  .toolbar { flex-direction: column; }
+  .filter-group { flex-wrap: wrap; }
+  .detail-title-group h1 { font-size: 1.5rem; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Animation delay for staggered cards */
+.deal-card:nth-child(1) { animation-delay: 0.05s; }
+.deal-card:nth-child(2) { animation-delay: 0.1s; }
+.deal-card:nth-child(3) { animation-delay: 0.15s; }
+.deal-card:nth-child(4) { animation-delay: 0.2s; }
+.deal-card:nth-child(5) { animation-delay: 0.25s; }
+.deal-card:nth-child(6) { animation-delay: 0.3s; }
+.deal-card:nth-child(7) { animation-delay: 0.35s; }
+.deal-card:nth-child(8) { animation-delay: 0.4s; }
+.deal-card:nth-child(9) { animation-delay: 0.45s; }
+.deal-card:nth-child(10) { animation-delay: 0.5s; }
+
+/* No results */
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-dim);
+}
+
+.no-results .nr-icon { font-size: 3rem; margin-bottom: 1rem; }
+.no-results .nr-text { font-size: 1rem; }
+</style>
+</head>
+<body>
+
+<!-- Live Market Ticker Bar -->
+<div id="ticker-bar" style="background:#0D1320;border-bottom:1px solid #1E2D45;padding:8px 20px;display:flex;align-items:center;gap:24px;overflow-x:auto;font-family:Inter,sans-serif;font-size:13px;position:sticky;top:0;z-index:999;">
+  <span style="color:#64748B;font-weight:600;white-space:nowrap;">📡 LIVE</span>
+  <div id="ticker-data" style="display:flex;gap:16px;align-items:center;"></div>
+</div>
+
+<div class="app">
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <!-- ═══════════ DASHBOARD VIEW ═══════════ -->
+  <div id="dashboard-view">
+    <div class="container">
+      <header class="header">
+        <div class="header-inner">
+          <div class="logo-group">
+            <div class="logo">MavDB</div>
+            <div class="logo-divider"></div>
+            <div class="header-title">Deal Operations Dashboard</div>
+          </div>
+          <div class="header-meta">
+            <div class="portfolio-value">
+              <div>
+                <div class="label">Portfolio Value</div>
+                <div class="value" id="total-value">—</div>
+              </div>
+            </div>
+            <div class="updated-stamp">Updated <span id="last-updated"></span></div>
+          </div>
+        </div>
+      </header>
+
+      <div class="stats-bar" id="stats-bar"></div>
+
+      <div class="toolbar">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="search-input" placeholder="Search deals by name, ticker, type, or director…">
+        </div>
+        <div class="filter-group" id="filter-group"></div>
+      </div>
+
+      <div class="deals-grid" id="deals-grid"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ DETAIL VIEW ═══════════ -->
+  <div class="detail-view" id="detail-view">
+    <div class="container">
+      <div class="detail-header">
+        <div class="detail-nav">
+          <button class="nav-btn" id="btn-back" onclick="closeDetail()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Dashboard
+          </button>
+          <button class="nav-btn" id="btn-prev" onclick="navDeal(-1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Prev
+          </button>
+          <button class="nav-btn" id="btn-next" onclick="navDeal(1)">
+            Next
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <div class="detail-header-inner">
+          <div class="detail-title-group">
+            <h1 id="detail-name"></h1>
+            <div class="detail-subtitle">
+              <span class="ticker-badge" id="detail-ticker"></span>
+              <span class="exchange-badge" id="detail-exchange"></span>
+              <span id="detail-status-badge"></span>
+            </div>
+          </div>
+          <div class="detail-progress-ring" id="detail-progress-ring"></div>
+        </div>
+      </div>
+
+      <div class="detail-body" id="detail-body"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// DEAL DATA
+// ═══════════════════════════════════════════════════════════════
+const DEALS = [
+  {
+    id: 'sugp',
+    name: 'SUGP × AzaCore Therapeutics',
+    ticker: 'SUGP',
+    exchange: 'Nasdaq',
+    type: 'Reverse Merger + PIPE',
+    value: 'Reverse Merger + PIPE',
+    valueNum: 350,
+    status: 'in-progress',
+    statusLabel: 'In Progress',
+    director: 'Karl Nana',
+    directorEmail: 'karl@blap.tv',
+    projected: 'Q1 2027',
+    pipeGross: '—',
+    pipeNet: '—',
+    pipeNote: '20% OID',
+    capTable: [
+      { name: 'Josh Bartch (Jupiter Capital LLC)', pct: '46.34%' },
+      { name: 'Scott (Bergalinex Investments Ltd)', pct: '30.00%' },
+      { name: 'Sign Kadouh', pct: '7.50%' },
+      { name: 'Rob Roscow', pct: '5.00%' },
+      { name: 'Damon (Emerald Baron LLC)', pct: '5.00%' },
+      { name: 'Karl Nana', pct: '2.50%' },
+      { name: 'Ray (Pioneer Garage Ltd)', pct: '2.00%' },
+      { name: 'Ever Glory Holdings Ltd', pct: '1.00%' },
+      { name: 'Patrick Schneider', pct: '0.33%' },
+      { name: 'Carran Schneider', pct: '0.33%' },
+    ],
+    progress: 55,
+    milestones: [
+      { label: 'SUGP PIPE financing initiated', status: 'in-progress' },
+      { label: 'AzaCore SPV — formation filed (Nevada)', status: 'done' },
+      { label: 'AzaCore SPV — cap table finalized', status: 'done' },
+      { label: 'AzaCore SPV — financial model complete', status: 'done' },
+      { label: 'AzaCore SPV — IP acquisition (Noveris)', status: 'in-progress' },
+      { label: 'AzaCore SPV — investor deck', status: 'done' },
+      { label: 'SUGP definitive agreement', status: 'pending' },
+      { label: 'SUGP PIPE closing', status: 'pending' },
+      { label: 'Announce acquisition of AzaCore SPV', status: 'pending' },
+    ],
+    outstanding: [
+      { text: 'AzaCore certificate from Nevada SOS', owner: 'Raquel Vazquez', priority: 'high' },
+      { text: 'Noveris IP negotiation — awaiting response to counter offer', owner: 'Josh Bartch', priority: 'high' },
+      { text: 'Preclinical data confirmation — MY205B vs MY205C', owner: 'Josh Bartch', priority: 'medium' },
+    ],
+    documents: [
+      { name: 'AzaCore Formation Docs (Nevada)', status: 'filed' },
+      { name: 'AzaCore NDA with Noveris', status: 'signed' },
+      { name: 'AzaCore Cap Table', status: 'final' },
+      { name: 'AzaCore Financial Model', status: 'final' },
+      { name: 'AzaCore Investor Deck', status: 'final' },
+      { name: 'SUGP Definitive Agreement', status: 'pending' },
+    ],
+    contacts: [
+      { name: 'Karl Nana', role: 'AzaCore SPV Director', email: 'karl@blap.tv' },
+      { name: 'Josh Bartch', role: 'CEO, MavDB', email: 'bartchjosh@gmail.com' },
+      { name: 'Ross Carmel', role: 'Attorney, SRFC', email: 'rcarmel@srfc.law' },
+      { name: 'Sign Kadouh', role: 'Deal Operations', email: 'sign.kadouh@gmail.com' },
+      { name: 'Jason Birmingham', role: 'Noveris', email: 'jb@noveris.health' },
+    ],
+    notes: 'Two concurrent paths: (1) Finance SUGP via PIPE + warrants to prepare the public shell, (2) Build AzaCore SPV with biotech assets (Noveris IP). Once both ready, SUGP announces acquisition of AzaCore. Karl Nana is AzaCore SPV director. AzaCore formation filed in Nevada — awaiting certificate. IP acquisition from Noveris in negotiation.',
+  },
+  {
+    id: 'qmc',
+    name: 'Quantacom Mining Corp / Quantec Holdings',
+    ticker: 'QMC',
+    exchange: 'Nasdaq',
+    type: 'Direct Listing (Dual)',
+    value: 'Direct Listing',
+    valueNum: 300,
+    status: 'in-progress',
+    statusLabel: 'In Progress',
+    director: 'Gerald Tritt',
+    directorEmail: 'gerald@senarycapital.com',
+    projected: 'H2 2027',
+    pipeGross: '—',
+    pipeNet: '—',
+    pipeNote: 'Per project',
+    capTable: [
+      { name: 'Josh Bartch (Jupiter Capital LLC)', pct: '27.50%' },
+      { name: 'Bergalinex Investments Ltd', pct: '25.00%' },
+      { name: 'Property Owners (Longland/Conico)', pct: '20.00%' },
+      { name: 'Sam Charanek', pct: '15.00%' },
+      { name: 'Kyler (entity TBD)', pct: '5.00%' },
+      { name: 'Round Lot Shareholders (300)', pct: '5.00%' },
+      { name: 'Sign Kadouh', pct: '2.50%' },
+    ],
+    progress: 40,
+    milestones: [
+      { label: 'Concept development', status: 'done' },
+      { label: 'Cap tables (3 versions)', status: 'done' },
+      { label: 'Financial model', status: 'done' },
+      { label: 'Incorporated (Oct 6)', status: 'done' },
+      { label: 'Farm-in JVA drafted', status: 'done' },
+      { label: 'RBW Capital engaged', status: 'done' },
+      { label: 'EIN application', status: 'in-progress' },
+      { label: 'Geological data compilation', status: 'pending' },
+      { label: 'S-1 registration drafting', status: 'pending' },
+    ],
+    outstanding: [
+      { text: 'EIN — Raquel processing', owner: 'Raquel Vazquez', priority: 'high' },
+      { text: 'Kyler / Matty / Muss — entity details for cap table', owner: 'Gerald Tritt', priority: 'medium' },
+      { text: 'Field season planning', owner: 'Gerald Tritt', priority: 'medium' },
+    ],
+    documents: [
+      { name: 'Certificate of Incorporation', status: 'filed' },
+      { name: 'Cap Table — Master ($300M)', status: 'final' },
+      { name: 'Cap Table — Project 1 ($75M)', status: 'final' },
+      { name: 'Cap Table — Project 2 ($225M)', status: 'final' },
+      { name: 'Financial Model', status: 'final' },
+      { name: 'Farm-in JVA', status: 'draft' },
+    ],
+    contacts: [
+      { name: 'Gerald Tritt', role: 'Director', email: 'gerald@senarycapital.com' },
+      { name: 'Josh Bartch', role: 'CEO, MavDB', email: 'bartchjosh@gmail.com' },
+      { name: 'Philip Gaucher', role: 'RBW Capital', email: 'pgaucher@rbwcap.com' },
+      { name: 'Adam Grund', role: 'RBW Capital', email: 'agrund@rbwcap.com' },
+      { name: 'Raquel Vazquez', role: 'Paralegal, SRFC', email: 'rvazquez@srfc.law' },
+    ],
+    notes: 'Dual-structure listing: $75M Project 1 + $225M Project 2 = $300M Master entity (Quantec Holdings). Farm-in JVA structures the mining rights acquisition. RBW Capital engaged as placement agent. Awaiting EIN from IRS to open bank accounts and proceed. Three separate cap tables maintained for each entity.',
+  },
+  {
+    id: 'zkin',
+    name: 'ZKIN × Hypertrust Holdings',
+    ticker: 'ZKIN',
+    exchange: 'Nasdaq',
+    type: 'Reverse Merger + PIPE',
+    value: '$25M',
+    valueNum: 25,
+    status: 'in-progress',
+    statusLabel: 'In Progress',
+    director: 'Steve Mynott',
+    directorEmail: 'stevemynott@ymail.com',
+    projected: 'TBD',
+    pipeGross: '—',
+    pipeNet: '—',
+    pipeNote: '',
+    capTable: [
+      { name: 'Jupiter Capital LLC (Josh)', pct: '39.50%' },
+      { name: 'Bergalinex Investments Ltd', pct: '24.84%' },
+      { name: '89 Group LLC', pct: '10.00%' },
+      { name: 'Sign Kadouh', pct: '7.50%' },
+      { name: 'Arkham Advisory', pct: '5.00%' },
+      { name: 'AVC Digital Ltd', pct: '5.00%' },
+      { name: 'Talora Consulting LLC', pct: '2.30%' },
+      { name: 'Lawrence Wu', pct: '2.30%' },
+      { name: 'MyCar Enterprises Ltd', pct: '1.50%' },
+      { name: 'Refuge Capital Corp', pct: '1.00%' },
+      { name: 'Ever Glory Holdings Ltd', pct: '1.00%' },
+      { name: 'Cube Group Inc', pct: '0.06%' },
+    ],
+    progress: 25,
+    milestones: [
+      { label: 'ZKIN term sheet drafted', status: 'done' },
+      { label: 'ZKIN term sheet sent', status: 'done' },
+      { label: 'Hypertrust SPV — incorporated (Nevada)', status: 'done' },
+      { label: 'Hypertrust SPV — formation docs received', status: 'done' },
+      { label: 'Hypertrust SPV — cap table finalization', status: 'in-progress' },
+      { label: 'Hypertrust SPV — EIN', status: 'pending' },
+      { label: 'ZKIN PIPE financing', status: 'pending' },
+      { label: 'ZKIN definitive agreement', status: 'pending' },
+      { label: 'Announce acquisition of Hypertrust SPV', status: 'pending' },
+    ],
+    outstanding: [
+      { text: 'Steve Mynott — EIN info for Hypertrust (SSN, business description, phone)', owner: 'Steve Mynott', priority: 'high' },
+      { text: '89 Group LLC — need registered address', owner: 'Sign Kadouh', priority: 'high' },
+      { text: 'Talora Consulting LLC — need registered address', owner: 'Sign Kadouh', priority: 'high' },
+      { text: 'Lawrence Wu — need address', owner: 'Sign Kadouh', priority: 'medium' },
+      { text: 'Refuge Capital Corp — Bermuda address needed', owner: 'Sign Kadouh', priority: 'medium' },
+      { text: 'Cube Group Inc — need entity details', owner: 'Sign Kadouh', priority: 'medium' },
+    ],
+    documents: [
+      { name: 'ZKIN Term Sheet', status: 'signed' },
+      { name: 'Hypertrust Certificate of Incorporation', status: 'filed' },
+      { name: 'Hypertrust Formation Docs', status: 'filed' },
+      { name: 'Hypertrust Cap Table', status: 'draft' },
+      { name: 'Hypertrust Shareholder Register', status: 'draft' },
+    ],
+    contacts: [
+      { name: 'Steve Mynott', role: 'Hypertrust SPV Director', email: 'stevemynott@ymail.com' },
+      { name: 'Josh Bartch', role: 'CEO, MavDB', email: 'bartchjosh@gmail.com' },
+      { name: 'Ross Carmel', role: 'Attorney, SRFC', email: 'rcarmel@srfc.law' },
+      { name: 'Sign Kadouh', role: 'Deal Operations', email: 'sign.kadouh@gmail.com' },
+      { name: 'Raquel Vazquez', role: 'Paralegal, SRFC', email: 'rvazquez@srfc.law' },
+    ],
+    notes: 'Two concurrent paths: (1) Finance ZKIN via PIPE + warrants to prepare the public shell, (2) Build Hypertrust SPV with Cube + other assets. Once both ready, ZKIN announces acquisition of Hypertrust. Steve Mynott is Hypertrust SPV director. Hypertrust incorporated in Nevada — formation docs received. Cap table ~90% complete — awaiting several entity addresses. EIN pending (Raquel needs Steve Mynott info).',
+  },
+  {
+    id: 'secundavida',
+    name: 'SecundaVida Biotech',
+    ticker: '—',
+    exchange: 'Nasdaq',
+    type: 'Direct Listing',
+    value: 'Direct Listing',
+    valueNum: 400,
+    status: 'in-progress',
+    statusLabel: 'In Progress',
+    director: 'Andrew Parks',
+    directorEmail: 'andrew@ekardpartners.com',
+    projected: '2027–2028',
+    pipeGross: 'TBD',
+    pipeNet: 'TBD',
+    pipeNote: '',
+    progress: 15,
+    milestones: [
+      { label: 'Concept development', status: 'done' },
+      { label: 'Cap table structure', status: 'done' },
+      { label: 'Formation documents', status: 'in-progress' },
+      { label: 'Licensing agreements', status: 'pending' },
+      { label: 'S-1 drafting', status: 'pending' },
+    ],
+    outstanding: [
+      { text: 'Andrew Parks — signature on formation docs', owner: 'Andrew Parks', priority: 'high' },
+      { text: 'Licensing agreements — structure and negotiate', owner: 'Josh Bartch', priority: 'medium' },
+    ],
+    documents: [
+      { name: 'Cap Table Structure', status: 'final' },
+      { name: 'Formation Documents', status: 'draft' },
+    ],
+    contacts: [
+      { name: 'Andrew Parks', role: 'Director', email: 'andrew@ekardpartners.com' },
+      { name: 'Josh Bartch', role: 'CEO, MavDB', email: 'bartchjosh@gmail.com' },
+    ],
+    notes: 'Biotech direct listing targeting $400M valuation. Blocked on Andrew Parks signing formation documents to incorporate the entity. Licensing agreements need to be structured after formation.',
+  },
+  {
+    id: 'stratum',
+    name: 'Stratum Oncology',
+    ticker: '—',
+    exchange: 'Nasdaq',
+    type: 'Direct Listing (Drug Resurrection)',
+    value: 'Direct Listing',
+    valueNum: 400,
+    status: 'early',
+    statusLabel: 'Early Stage',
+    director: 'TBD',
+    directorEmail: '',
+    projected: '2028',
+    pipeGross: 'TBD',
+    pipeNet: 'TBD',
+    pipeNote: '',
+    progress: 5,
+    milestones: [
+      { label: 'Concept development', status: 'done' },
+      { label: 'Drug candidate identification', status: 'pending' },
+      { label: 'IP acquisition', status: 'pending' },
+      { label: 'Formation', status: 'pending' },
+    ],
+    outstanding: [],
+    documents: [],
+    contacts: [
+      { name: 'Josh Bartch', role: 'CEO, MavDB', email: 'bartchjosh@gmail.com' },
+    ],
+    notes: 'Drug resurrection play targeting oncology space. Early-stage concept. Director and drug candidate TBD. Targeting 2028 Nasdaq listing at $400M valuation.',
+  },
+  {
+    id: 'cogniveil',
+    name: 'Cogniveil Therapeutics',
+    ticker: '—',
+    exchange: 'Nasdaq',
+    type: 'Direct Listing (Drug Resurrection)',
+    value: 'Direct Listing',
+    valueNum: 400,
+    status: 'early',
+    statusLabel: 'Early Stage',
+    director: 'TBD',
+    directorEmail: '',
+    projected: '2028',
+    pipeGross: 'TBD',
+    pipeNet: 'TBD',
+    pipeNote: '',
+    progress: 5,
+    milestones: [
+      { label: 'Concept development', status: 'done' },
+      { label: 'Drug candidate identification', status: 'pending' },
+      { label: 'IP acquisition', status: 'pending' },
+      { label: 'Formation', status: 'pending' },
+    ],
+    outstanding: [],
+    documents: [],
+    contacts: [
+      { name: 'Josh Bartch', role: 'CEO, MavDB', email: 'bartchjosh@gmail.com' },
+    ],
+    notes: 'Drug resurrection play — therapeutics focus TBD. Early-stage concept. Director and drug candidate TBD. Targeting 2028 Nasdaq listing at $400M valuation.',
+  },
+  {
+    id: 'resilion',
+    name: 'Resilion Therapeutics',
+    ticker: '—',
+    exchange: 'Nasdaq',
+    type: 'Direct Listing (Drug Resurrection)',
+    value: 'Direct Listing',
+    valueNum: 400,
+    status: 'early',
+    statusLabel: 'Early Stage',
+    director: 'TBD',
+    directorEmail: '',
+    projected: '2028',
+    pipeGross: 'TBD',
+    pipeNet: 'TBD',
+    pipeNote: '',
+    progress: 8,
+    milestones: [
+      { label: 'Concept development', status: 'done' },
+      { label: 'BNC-210 acquisition target identified', status: 'in-progress', note: 'URGENT — Neuphoria strategic review' },
+      { label: 'IP acquisition', status: 'pending' },
+      { label: 'Formation', status: 'pending' },
+    ],
+    outstanding: [
+      { text: 'BNC-210 acquisition — URGENT. Neuphoria is undergoing strategic review. Window to acquire.', owner: 'Josh Bartch', priority: 'high' },
+    ],
+    documents: [],
+    contacts: [
+      { name: 'Josh Bartch', role: 'CEO, MavDB', email: 'bartchjosh@gmail.com' },
+    ],
+    notes: 'Drug resurrection play targeting BNC-210 compound (anxiety/PTSD). URGENT: Neuphoria Therapeutics is undergoing a strategic review, creating a time-sensitive window to acquire the BNC-210 asset. Early-stage but requires immediate action on IP acquisition.',
+  },
+  {
+    id: 'cykl',
+    name: 'Cykel AI',
+    ticker: 'CYKL',
+    exchange: 'LSE',
+    type: 'Prospectus / Financing',
+    value: 'Placing',
+    valueNum: 2.5,
+    status: 'active',
+    statusLabel: 'Active',
+    director: 'Josh Bartch',
+    directorEmail: 'bartchjosh@gmail.com',
+    projected: 'Q4 2026',
+    pipeGross: '—',
+    pipeNet: '—',
+    pipeNote: '',
+    capTable: [
+      { name: 'Placing Investors', pct: '54.39%' },
+      { name: 'Pre-Paid Warrant Exercise (25.4%)', pct: '26.62%' },
+      { name: 'Current Shareholders', pct: '16.86%' },
+      { name: 'Fortified (Broker Fees)', pct: '2.12%' },
+    ],
+    progress: 50,
+    milestones: [
+      { label: 'Warrant structure agreed', status: 'done' },
+      { label: 'Cap table finalized', status: 'done' },
+      { label: 'Prospectus drafting', status: 'in-progress' },
+      { label: 'FCA approval', status: 'pending' },
+      { label: 'Placing completion', status: 'pending' },
+      { label: 'Admission', status: 'pending' },
+    ],
+    outstanding: [
+      { text: 'Prospectus approval from FCA', owner: 'Fortified Securities', priority: 'high' },
+      { text: 'Placing investor commitments', owner: 'Josh Bartch', priority: 'high' },
+    ],
+    documents: [
+      { name: 'Cap Table', status: 'final' },
+      { name: 'Warrant Register', status: 'final' },
+      { name: 'Prospectus Draft', status: 'draft' },
+    ],
+    contacts: [
+      { name: 'Josh Bartch', role: 'Investor', email: 'bartchjosh@gmail.com' },
+      { name: 'Sign Kadouh', role: 'Advisor', email: 'sign.kadouh@gmail.com' },
+      { name: 'Fortified Securities', role: 'Broker', email: '' },
+    ],
+    notes: 'LSE-listed AI company. £2M placing at £0.12/share. Josh holds 7.8M warrants (2.6M pre-paid @ £0.12 + 5.2M cash). Sign Kadouh holds 10.4M warrants. Current market cap ~£904K. Heavily dilutive structure — 5.2M shares to potentially 65.8M fully diluted (12.7x).',
+  },
+  {
+    id: 'horizen',
+    name: 'Horizen Labs',
+    ticker: '—',
+    exchange: 'Nasdaq',
+    type: 'Direct Listing',
+    value: 'Advisory',
+    valueNum: 0,
+    status: 'in-progress',
+    statusLabel: 'In Progress',
+    director: 'Robert',
+    directorEmail: '',
+    projected: 'Ongoing',
+    pipeGross: '—',
+    pipeNet: '—',
+    pipeNote: '',
+    progress: 40,
+    milestones: [
+      { label: 'Advisory agreement drafted', status: 'done' },
+      { label: 'Ross Carmel redline received', status: 'done' },
+      { label: 'Agreement clean-up', status: 'in-progress' },
+      { label: 'Agreement execution', status: 'pending' },
+    ],
+    outstanding: [
+      { text: 'Clean up redline from Ross Carmel', owner: 'Sign Kadouh', priority: 'medium' },
+    ],
+    documents: [
+      { name: 'Advisory Agreement', status: 'draft' },
+      { name: 'Ross Carmel Redline', status: 'draft' },
+    ],
+    contacts: [
+      { name: 'Robert', role: 'CEO', email: '' },
+      { name: 'Thomas Palletti', role: 'Counsel', email: '' },
+      { name: 'Sign Kadouh', role: 'Advisor', email: 'sign.kadouh@gmail.com' },
+      { name: 'Andy Wang', role: 'Auditor, TAAD', email: 'andy@taadllp.com' },
+    ],
+    notes: 'CSE-listed. Advisory agreement in progress. Thomas Palletti is counsel, TAAD is auditor, Robert is CEO, Sign Kadouh is advisor. Redline from Ross Carmel pending clean-up.',
+  },
+  ];
+
+// ═══════════════════════════════════════════════════════════════
+// STATUS MAP
+// ═══════════════════════════════════════════════════════════════
+const STATUS_CONFIG = {
+  'active':      { label: 'Active',      class: 'active',      color: 'var(--accent-green)' },
+  'in-progress': { label: 'In Progress', class: 'in-progress', color: 'var(--accent-blue)' },
+  'pending':     { label: 'Pending',     class: 'pending',     color: 'var(--accent-amber)' },
+  'blocked':     { label: 'Blocked',     class: 'blocked',     color: 'var(--accent-red)' },
+  'litigation':  { label: 'Litigation',  class: 'litigation',  color: 'var(--accent-red)' },
+  'early':       { label: 'Early Stage', class: 'early',       color: 'var(--accent-purple)' },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER ENGINE
+// ═══════════════════════════════════════════════════════════════
+let currentFilter = 'all';
+let currentSearch = '';
+let currentDealIndex = -1;
+let currentGroupBy = 'exchange'; // 'exchange' or 'status' or 'none'
+
+function initials(name) {
+  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function formatValue(v) {
+  return v;
+}
+
+function getFilteredDeals() {
+  return DEALS.filter(d => {
+    const matchFilter = currentFilter === 'all' || d.status === currentFilter;
+    const q = currentSearch.toLowerCase();
+    const matchSearch = !q ||
+      d.name.toLowerCase().includes(q) ||
+      d.ticker.toLowerCase().includes(q) ||
+      d.type.toLowerCase().includes(q) ||
+      d.director.toLowerCase().includes(q) ||
+      d.exchange.toLowerCase().includes(q);
+    return matchFilter && matchSearch;
+  });
+}
+
+function renderStats() {
+  const counts = { active: 0, pending: 0, early: 0, litigation: 0 };
+  let totalVal = 0;
+  DEALS.forEach(d => {
+    if (d.status === 'active') counts.active++;
+    else if (d.status === 'pending' || d.status === 'in-progress') counts.pending++;
+    else if (d.status === 'early') counts.early++;
+    else if (d.status === 'litigation' || d.status === 'blocked') counts.litigation++;
+    totalVal += d.valueNum;
+  });
+
+  document.getElementById('total-value').textContent = DEALS.length + ' Deals';
+
+  const bar = document.getElementById('stats-bar');
+  bar.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-icon green">⚡</div>
+      <div class="stat-info">
+        <div class="stat-value">${counts.active}</div>
+        <div class="stat-label">Active Deals</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon amber">⏳</div>
+      <div class="stat-info">
+        <div class="stat-value">${counts.pending}</div>
+        <div class="stat-label">Pending</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon blue">🔬</div>
+      <div class="stat-info">
+        <div class="stat-value">${counts.early}</div>
+        <div class="stat-label">Early Stage</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon red">⚖️</div>
+      <div class="stat-info">
+        <div class="stat-value">${counts.litigation}</div>
+        <div class="stat-label">Litigation</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green">📊</div>
+      <div class="stat-info">
+        <div class="stat-value">${DEALS.length}</div>
+        <div class="stat-label">Total Deals</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderFilters() {
+  const statuses = ['all', 'active', 'in-progress', 'pending', 'early', 'litigation'];
+  const labels = { all: 'All Deals', active: 'Active', 'in-progress': 'In Progress', pending: 'Pending', early: 'Early Stage', litigation: 'Litigation' };
+  const group = document.getElementById('filter-group');
+  group.innerHTML = statuses.map(s =>
+    `<button class="filter-btn ${currentFilter === s ? 'active' : ''}" onclick="setFilter('${s}')">${labels[s]}</button>`
+  ).join('') + `
+    <span style="display:inline-block;width:1px;height:24px;background:#1E2D45;margin:0 8px;vertical-align:middle;"></span>
+    <button class="filter-btn ${currentGroupBy === 'exchange' ? 'active' : ''}" onclick="setGroupBy('exchange')" style="font-size:12px;">By Exchange</button>
+    <button class="filter-btn ${currentGroupBy === 'status' ? 'active' : ''}" onclick="setGroupBy('status')" style="font-size:12px;">By Status</button>
+    <button class="filter-btn ${currentGroupBy === 'none' ? 'active' : ''}" onclick="setGroupBy('none')" style="font-size:12px;">No Grouping</button>
+  `;
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  renderFilters();
+  renderGrid();
+}
+
+function setGroupBy(g) {
+  currentGroupBy = g;
+  renderFilters();
+  renderGrid();
+}
+
+function renderDealCard(d, i) {
+  const sc = STATUS_CONFIG[d.status];
+  return `
+  <div class="deal-card" data-status="${d.status}" style="animation-delay: ${i * 0.06}s" onclick="openDetail('${d.id}')">
+    <div class="card-top">
+      <div>
+        <div class="deal-name">${d.name}</div>
+        ${d.ticker !== '—' ? `<div class="deal-ticker">${d.ticker}</div>` : ''}
+      </div>
+      <span class="status-badge ${sc.class}"><span class="dot"></span>${sc.label}</span>
+    </div>
+    <div class="card-meta">
+      <span class="meta-tag">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        ${d.exchange}
+      </span>
+      <span class="meta-tag">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        ${d.type}
+      </span>
+    </div>
+    <div class="card-value">${d.value}</div>
+    <div class="progress-section">
+      <div class="progress-label">
+        <span>Completion</span>
+        <span>${d.progress}%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" data-width="${d.progress}"></div>
+      </div>
+    </div>
+    <div class="card-footer">
+      <div class="director-info">
+        <div class="director-avatar">${initials(d.director)}</div>
+        <span class="director-name">${d.director}</span>
+      </div>
+      <span class="projected-date">${d.projected}</span>
+    </div>
+  </div>`;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('deals-grid');
+  const deals = getFilteredDeals();
+
+  if (!deals.length) {
+    grid.innerHTML = '<div class="no-results"><div class="nr-icon">🔍</div><div class="nr-text">No deals match your search</div></div>';
+    return;
+  }
+
+  if (currentGroupBy === 'none') {
+    grid.innerHTML = deals.map((d, i) => renderDealCard(d, i)).join('');
+  } else {
+    // Group deals
+    const groups = {};
+    const groupOrder = currentGroupBy === 'exchange'
+      ? ['Nasdaq', 'NYSE American', 'OTC', 'ASX', 'CSE', 'LSE', 'Euronext', 'Private']
+      : ['Active', 'In Progress', 'Pending', 'Early Stage', 'Litigation', 'Blocked'];
+
+    const groupIcons = currentGroupBy === 'exchange' ? {
+      'Nasdaq': '🇺🇸', 'NYSE American': '🇺🇸', 'OTC': '🇺🇸', 'ASX': '🇦🇺',
+      'CSE': '🇨🇦', 'LSE': '🇬🇧', 'Euronext': '🇪🇺', 'Private': '🔒',
+      'Nasdaq': '🇺🇸', 'Nasdaq': '🇺🇸'
+    } : {
+      'Active': '⚡', 'In Progress': '🔄', 'Pending': '⏳',
+      'Early Stage': '🔬', 'Litigation': '⚖️', 'Blocked': '🚫'
+    };
+
+    deals.forEach(d => {
+      const key = currentGroupBy === 'exchange' ? d.exchange : (STATUS_CONFIG[d.status]?.label || d.statusLabel);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(d);
+    });
+
+    let html = '';
+    let globalIdx = 0;
+
+    // Sort groups by predefined order
+    const sortedKeys = Object.keys(groups).sort((a, b) => {
+      const ai = groupOrder.indexOf(a);
+      const bi = groupOrder.indexOf(b);
+      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+    });
+
+    sortedKeys.forEach(key => {
+      const icon = groupIcons[key] || '📊';
+      html += `<div style="grid-column:1/-1;margin-top:24px;margin-bottom:8px;padding:12px 16px;background:rgba(255,255,255,0.03);border:1px solid #1E2D45;border-radius:10px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:20px;">${icon}</span>
+        <span style="font-family:Syne,sans-serif;font-weight:700;font-size:16px;color:#F1F5F9;letter-spacing:0.5px;">${key}</span>
+        <span style="font-size:13px;color:#64748B;margin-left:auto;">${groups[key].length} deal${groups[key].length !== 1 ? 's' : ''}</span>
+      </div>`;
+      groups[key].forEach(d => {
+        html += renderDealCard(d, globalIdx++);
+      });
+    });
+
+    grid.innerHTML = html;
+  }
+
+  // Animate progress bars
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      grid.querySelectorAll('.progress-fill').forEach(el => {
+        el.style.width = el.dataset.width + '%';
+      });
+    }, 100);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DETAIL VIEW
+// ═══════════════════════════════════════════════════════════════
+function openDetail(id) {
+  const idx = DEALS.findIndex(d => d.id === id);
+  if (idx === -1) return;
+  currentDealIndex = idx;
+  renderDetail(DEALS[idx]);
+  document.getElementById('detail-view').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  document.getElementById('detail-view').classList.remove('open');
+  document.body.style.overflow = '';
+  currentDealIndex = -1;
+}
+
+function navDeal(dir) {
+  const newIdx = currentDealIndex + dir;
+  if (newIdx < 0 || newIdx >= DEALS.length) return;
+  currentDealIndex = newIdx;
+  renderDetail(DEALS[newIdx]);
+  document.getElementById('detail-view').scrollTop = 0;
+}
+
+function renderDetail(d) {
+  const sc = STATUS_CONFIG[d.status];
+
+  // Header
+  document.getElementById('detail-name').textContent = d.name;
+  document.getElementById('detail-ticker').textContent = d.ticker !== '—' ? d.ticker : 'Pre-Ticker';
+  document.getElementById('detail-exchange').textContent = d.exchange;
+  document.getElementById('detail-status-badge').innerHTML = `<span class="status-badge ${sc.class}"><span class="dot"></span>${sc.label}</span>`;
+
+  // Progress ring
+  const circumference = 2 * Math.PI * 28;
+  const offset = circumference - (d.progress / 100) * circumference;
+  document.getElementById('detail-progress-ring').innerHTML = `
+    <div class="progress-circle">
+      <svg width="70" height="70" viewBox="0 0 70 70">
+        <circle class="bg" cx="35" cy="35" r="28" fill="none" stroke-width="5"/>
+        <circle class="fg" cx="35" cy="35" r="28" fill="none" stroke="${sc.color}" stroke-width="5"
+          stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}" stroke-linecap="round"
+          style="stroke-dashoffset: ${offset}"/>
+      </svg>
+      <div class="pct">${d.progress}%</div>
+    </div>
+  `;
+
+  // Nav buttons
+  document.getElementById('btn-prev').style.visibility = currentDealIndex > 0 ? 'visible' : 'hidden';
+  document.getElementById('btn-next').style.visibility = currentDealIndex < DEALS.length - 1 ? 'visible' : 'hidden';
+
+  // Body sections
+  const body = document.getElementById('detail-body');
+  let html = '';
+
+  // Key Metrics
+  html += `
+    <div class="detail-section">
+      <div class="section-title"><span class="icon">📊</span> Key Metrics</div>
+      <div class="metrics-grid">
+        <div class="metric-item">
+          <div class="metric-label">Transaction Value</div>
+          <div class="metric-value">${d.value}</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-label">PIPE Gross</div>
+          <div class="metric-value">${d.pipeGross}</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-label">PIPE Net</div>
+          <div class="metric-value">${d.pipeNet}</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-label">Projected</div>
+          <div class="metric-value">${d.projected}</div>
+        </div>
+        ${d.pipeNote ? `<div class="metric-item"><div class="metric-label">Note</div><div class="metric-value" style="font-size:0.85rem">${d.pipeNote}</div></div>` : ''}
+      </div>
+    </div>
+  `;
+
+  // Cap Table
+  if (d.capTable && d.capTable.length) {
+    html += `
+      <div class="detail-section full-width">
+        <div class="section-title"><span class="icon">📊</span> Cap Table</div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:14px;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border);">
+                <th style="text-align:left;padding:10px 12px;color:var(--text-secondary);font-weight:500;">Holder</th>
+                <th style="text-align:right;padding:10px 12px;color:var(--text-secondary);font-weight:500;">Ownership</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${d.capTable.map(row => `
+                <tr style="border-bottom:1px solid var(--border-subtle);">
+                  <td style="padding:10px 12px;color:var(--text-primary);">${row.name}</td>
+                  <td style="text-align:right;padding:10px 12px;color:var(--accent-green);font-weight:600;">${row.pct}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  // Contacts
+  html += `
+    <div class="detail-section">
+      <div class="section-title"><span class="icon">👥</span> Key Contacts</div>
+      <div class="contacts-grid">
+        ${d.contacts.map(c => `
+          <div class="contact-card">
+            <div class="contact-avatar">${initials(c.name)}</div>
+            <div class="contact-info">
+              <div class="contact-name">${c.name}</div>
+              <div class="contact-role">${c.role}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  // Milestones
+  html += `
+    <div class="detail-section full-width">
+      <div class="section-title"><span class="icon">🎯</span> Milestone Tracker</div>
+      <ul class="milestone-list">
+        ${d.milestones.map(m => {
+          const icon = m.status === 'done' ? '✓' : m.status === 'in-progress' ? '◉' : m.status === 'blocked' ? '✕' : '○';
+          return `
+            <li class="milestone-item">
+              <div class="milestone-dot ${m.status}">${icon}</div>
+              <div class="milestone-text">
+                <div class="ms-label">${m.label}</div>
+                ${m.note ? `<div class="ms-date">${m.note}</div>` : ''}
+              </div>
+            </li>
+          `;
+        }).join('')}
+      </ul>
+    </div>
+  `;
+
+  // Outstanding Tasks
+  if (d.outstanding.length) {
+    html += `
+      <div class="detail-section">
+        <div class="section-title"><span class="icon">⚡</span> Outstanding Tasks</div>
+        <ul class="task-list">
+          ${d.outstanding.map(t => `
+            <li class="task-item">
+              <div class="task-check"></div>
+              <div class="task-content">
+                <div class="task-text">${t.text}</div>
+                <div class="task-meta">
+                  <span class="task-owner">→ ${t.owner}</span>
+                  <span class="task-priority priority-${t.priority}">${t.priority}</span>
+                </div>
+              </div>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  // Documents
+  if (d.documents.length) {
+    html += `
+      <div class="detail-section">
+        <div class="section-title"><span class="icon">📄</span> Documents</div>
+        <ul class="doc-list">
+          ${d.documents.map(doc => `
+            <li class="doc-item">
+              <span class="doc-name"><span class="doc-icon">📋</span> ${doc.name}</span>
+              <span class="doc-status ${doc.status}">${doc.status}</span>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  // Notes
+  if (d.notes) {
+    html += `
+      <div class="detail-section full-width">
+        <div class="section-title"><span class="icon">📝</span> Notes & Context</div>
+        <div class="notes-content"><p>${d.notes}</p></div>
+      </div>
+    `;
+  }
+
+  body.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+function init() {
+  // Timestamp
+  const now = new Date();
+  document.getElementById('last-updated').textContent = now.toLocaleDateString('en-US', {
+    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
+
+  renderStats();
+  renderFilters();
+  renderGrid();
+
+  // Search
+  document.getElementById('search-input').addEventListener('input', (e) => {
+    currentSearch = e.target.value;
+    renderGrid();
+  });
+
+  // Keyboard nav
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('detail-view').classList.contains('open')) {
+      closeDetail();
+    }
+  });
+}
+
+init();
+</script>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// LIVE MARKET DATA
+// ═══════════════════════════════════════════════════════════════
+const LIVE_TICKERS = [
+  // Nasdaq
+  { symbol: 'SUGP', exchange: 'Nasdaq' },
+  { symbol: 'RZAI', exchange: 'Nasdaq' },
+  { symbol: 'ZKIN', exchange: 'Nasdaq' },
+  // NYSE American
+  // OTC
+  // ASX
+  // CSE
+  // LSE
+  { symbol: 'CYKL.L', display: 'CYKL', exchange: 'LSE' },
+  // Euronext
+];
+
+async function fetchQuotes() {
+  const container = document.getElementById('ticker-data');
+  if (!container) return;
+  try {
+    const symbols = LIVE_TICKERS.map(t => t.symbol).join(',');
+    const resp = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}`);
+    if (resp.ok) {
+      const data = await resp.json();
+      const quotes = data.quoteResponse?.result || [  ];
+      container.innerHTML = quotes.map(q => {
+        const ticker = LIVE_TICKERS.find(t => t.symbol === q.symbol);
+        const name = ticker?.display || q.symbol;
+        const price = q.regularMarketPrice?.toFixed(2) || '—';
+        const change = q.regularMarketChange?.toFixed(2) || '0.00';
+        const pct = q.regularMarketChangePercent?.toFixed(2) || '0.00';
+        const vol = q.regularMarketVolume ? (q.regularMarketVolume > 1e6 ? (q.regularMarketVolume/1e6).toFixed(1)+'M' : (q.regularMarketVolume/1e3).toFixed(0)+'K') : '—';
+        const up = q.regularMarketChange >= 0;
+        const c = up ? '#10B981' : '#EF4444';
+        const a = up ? '▲' : '▼';
+        return `<div style="display:flex;align-items:center;gap:8px;white-space:nowrap;padding:4px 12px;background:rgba(255,255,255,0.03);border-radius:6px;">
+          <span style="color:#F1F5F9;font-weight:600;">${name}</span>
+          <span style="color:#F1F5F9;">$${price}</span>
+          <span style="color:${c};font-size:12px;">${a} ${change} (${pct}%)</span>
+          <span style="color:#64748B;font-size:11px;">Vol: ${vol}</span>
+        </div>`;
+      }).join('');
+    } else { showFallback(container); }
+  } catch(e) { showFallback(container); }
+}
+
+function showFallback(container) {
+  container.innerHTML = LIVE_TICKERS.map(t => {
+    const name = t.display || t.symbol;
+    return `<a href="https://finance.yahoo.com/quote/${t.symbol}" target="_blank" style="text-decoration:none;display:flex;align-items:center;gap:6px;white-space:nowrap;padding:4px 12px;background:rgba(255,255,255,0.03);border-radius:6px;">
+      <span style="color:#F1F5F9;font-weight:600;">${name}</span>
+      <span style="color:#64748B;font-size:11px;">${t.exchange}</span>
+    </a>`;
+  }).join('');
+}
+
+fetchQuotes();
+setInterval(fetchQuotes, 60000);
+</script>
+</body>
+</html>
